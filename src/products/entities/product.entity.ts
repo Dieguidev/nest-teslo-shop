@@ -1,4 +1,5 @@
-import { BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { ProductImage } from "./product-image.entity";
 
 @Entity('products')
 export class Product {
@@ -44,12 +45,21 @@ export class Product {
   })
   tags: string[];
 
+  @OneToMany(
+    () => ProductImage,
+    (productImage) => productImage.product,
+    {
+      cascade: true,
+      eager: true
+    }
+  )
+  images?: ProductImage[];
+
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
-
 
   @BeforeInsert()
   checkSlugInsert() {
