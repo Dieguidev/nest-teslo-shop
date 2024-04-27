@@ -21,18 +21,13 @@ export class ProductsService {
   async create(createProductDto: CreateProductDto) {
 
     try {
-
       const product = this.productRepository.create(createProductDto);
       await this.productRepository.save(product);
 
       return product
-
     } catch (error) {
-
       this.handleDBExceptions(error)
-
     }
-
   }
 
   async findAll(paginationDto: PaginationDto) {
@@ -42,6 +37,7 @@ export class ProductsService {
       skip: offset
     });
   }
+
 
   async findOne(term: string) {
     let product: Product;
@@ -58,17 +54,24 @@ export class ProductsService {
         .getOne(); //getOne trae solo un resultado
     }
 
-    // const product = await this.productRepository.findOneBy({ term });
-    // console.log(product);
-
     if (!product) throw new NotFoundException(`Product with id ${term} not found`);
     return product
 
   }
 
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+  async update(id: string, updateProductDto: UpdateProductDto) {
+    const product = await this.productRepository.preload({ id, ...updateProductDto });
+
+    if (!product) throw new NotFoundException(`Product with id ${id} not found`);
+
+
+    try {
+      await this.productRepository.save(product);
+      return product;
+    } catch (error) {
+      this.handleDBExceptions(error)
+    }
   }
 
   async remove(id: string) {
