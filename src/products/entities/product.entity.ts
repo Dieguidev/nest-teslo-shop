@@ -1,7 +1,7 @@
 import { BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { ProductImage } from "./product-image.entity";
 
-@Entity('products')
+@Entity({name: 'products'})
 export class Product {
   @PrimaryGeneratedColumn('uuid')
   id: string;
