@@ -1,34 +1,47 @@
-import { BadRequestException, Controller, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Param, Post, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FilesService } from './files.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { fileFilter } from 'src/common/helpers/fileFilter.helper';
+import { fileFilter, fileNamer } from 'src/files/helpers';
 import { diskStorage } from 'multer';
+import { Response } from 'express';
+import { ConfigService } from '@nestjs/config';
+
 
 
 
 @Controller('files')
 export class FilesController {
-  constructor(private readonly filesService: FilesService) { }
+  constructor(
+    private readonly filesService: FilesService,
+    private readonly configService: ConfigService
+  ) { }
+
+  @Get('product/:imageName')
+  findProductImage(
+    @Res() res: Response,
+    @Param('imageName') imageName: string
+  ) {
+
+    const path = this.filesService.getStaticProductImage(imageName);
+    res.status(200).sendFile(path);
+  }
 
   @Post('product')
-  @UseInterceptors(FileInterceptor('file',{
+  @UseInterceptors(FileInterceptor('file', {
     fileFilter: fileFilter,
     // limits: { fileSize: 1000 }
     storage: diskStorage({
-      destination: './static/uploads',
-      // filename: (req, file, cb) => {
-      //   const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      //   const fileName = `${uniqueSuffix}-${file.originalname}`;
-      //   cb(null, fileName);
-      // }
+      destination: './static/products',
+      filename: fileNamer
     })
   }))
   uploadProductFile(
     @UploadedFile() file: Express.Multer.File,
   ) {
     if (!file) throw new BadRequestException('Make sure the file is an image');
-    return {
-      fileName: file.originalname,
-    };
+
+    const secureUrl = `${this.configService.get('HOST_API')}/files/product/${file.filename}`;
+
+    return {secureUrl};
   }
 }
