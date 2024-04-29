@@ -1,13 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Headers, SetMetadata } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto, LoginUserDto } from './dto';
 import { AuthGuard } from '@nestjs/passport';
+import { User } from './entities/user.entity';
+import { GetUser, RawHeadres } from './decorators';
+import { IncomingHttpHeaders } from 'http';
+import { UserRoleGuard } from './guards/user-role/user-role.guard';
 
 
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post('register')
   createUser(@Body() createUserDto: CreateUserDto) {
@@ -18,11 +22,30 @@ export class AuthController {
     return this.authService.login(loginUserDto);
   }
 
+  // @Get()
+  // @UseGuards(AuthGuard())
+  // findAll(
+  //   // @Req() request: Express.Request
+  //   @GetUser() user: User,
+  //   @GetUser('email') userEmail: string,
+  //   @RawHeadres() rawHeaders: string[],
+  //   @Headers() headers: IncomingHttpHeaders
+  // ) {
+
+  //   return { user, userEmail, rawHeaders, headers };
+  // }
+
+
   @Get()
-  @UseGuards(AuthGuard())
-  findAll() {
-    return this.authService.findAll();
+  @SetMetadata('roles', ['admin', 'super-user'])
+  @UseGuards(AuthGuard(), UserRoleGuard)
+  findAll(
+    @GetUser() user: User,
+  ) {
+
+    return { user,};
   }
+
 
   // @Get(':id')
   // findOne(@Param('id') id: string) {
