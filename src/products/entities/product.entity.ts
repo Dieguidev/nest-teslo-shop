@@ -1,5 +1,6 @@
-import { BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { ProductImage } from "./product-image.entity";
+import { User } from "src/auth/entities/user.entity";
 
 @Entity({name: 'products'})
 export class Product {
@@ -54,6 +55,13 @@ export class Product {
     }
   )
   images?: ProductImage[];
+
+  @ManyToOne(
+    () => User,
+    (user) => user.products,
+    { eager: true }
+  )
+   user: User;
 
   @CreateDateColumn()
   createdAt: Date;
